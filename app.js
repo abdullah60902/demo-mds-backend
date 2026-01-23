@@ -41,6 +41,8 @@ const StaffDocumentRoutes = require('./api/route/staffDocuments');
 const templateRoutes = require('./api/route/templateRoutes');
 const staffPayRoutes = require('./api/route/staffPay');
 const shiftsRoutes = require('./api/route/shifts');
+const residentDocumentRoutes = require('./api/route/residentDocuments');
+
 
 // New Feature Routes
 const pbsPlanRoutes = require('./api/route/pbsPlanRoutes');
@@ -58,6 +60,8 @@ app.use('/staffpay', staffPayRoutes);
 app.use('/templates', templateRoutes);
 app.use('/staff-documents', StaffDocumentRoutes);
 app.use("/performance", performanceRoutes);
+app.use('/resident-documents', residentDocumentRoutes);
+
 app.use("/social", socialActivityRoutes);
 app.use('/training', training);
 app.use('/incident', incident);
