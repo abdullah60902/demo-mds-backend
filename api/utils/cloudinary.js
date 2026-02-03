@@ -3,9 +3,9 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // ✅ Cloudinary configuration
 cloudinary.config({
-  cloud_name: 'dgafrctb0',
-  api_key: '366995947314162',
-  api_secret: 'bQ65RzHV_TIGE7LdpKWpp7O2HPQ'
+  cloud_name: 'dyhjasbca',
+  api_key: '794237265965874',
+  api_secret: 'TqN8HObDjqOxLWQSta6viwPscio'
 });
 // ✅ Multer storage setup with full format support (images + videos + PDFs)
 const storage = new CloudinaryStorage({

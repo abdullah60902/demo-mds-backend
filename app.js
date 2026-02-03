@@ -7,7 +7,7 @@ const fs = require('fs');
 const app = express();
 
 // MongoDB connection (direct, no .env)
-mongoose.connect('mongodb+srv://abdullah0123:12345678iman@cluster0.ik5f94l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb+srv://Abdullah:Abdullahdeveloper908@cluster0.6mhjms9.mongodb.net/?appName=Cluster0');
 
 mongoose.connection.on('error', (error) => {
     console.log('MongoDB connection failed:', error);
@@ -42,8 +42,6 @@ const templateRoutes = require('./api/route/templateRoutes');
 const staffPayRoutes = require('./api/route/staffPay');
 const shiftsRoutes = require('./api/route/shifts');
 const residentDocumentRoutes = require('./api/route/residentDocuments');
-
-
 // New Feature Routes
 const pbsPlanRoutes = require('./api/route/pbsPlanRoutes');
 const riskAssessmentRoutes = require('./api/route/riskAssessmentRoutes');
