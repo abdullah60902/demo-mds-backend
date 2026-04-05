@@ -51,6 +51,7 @@ const consentRoutes = require('./api/route/consentRoutes');
 const handoverRoutes = require('./api/route/handoverRoutes');
 const medicationRoutes = require('./api/route/medicationRoutes');
 const medicationAdministrationRoutes = require('./api/route/medicationAdministrationRoutes');
+const assessmentRoutes = require('./api/route/assessmentRoutes');
 
 // Route Registrations
 app.use('/shifts', shiftsRoutes);
@@ -82,6 +83,7 @@ app.use('/handover', handoverRoutes);
 app.use('/medication', medicationRoutes);
 app.use('/medications', medicationRoutes); // Alias for frontend compatibility
 app.use('/medication-administration', medicationAdministrationRoutes);
+app.use('/assessment', assessmentRoutes);
 
 // 404 handler
 app.use((req, res) => {
