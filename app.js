@@ -7,7 +7,7 @@ const fs = require('fs');
 const app = express();
 
 // MongoDB connection (direct, no .env)
-mongoose.connect('mongodb+srv://Abdullah:Abdullahdeveloper908@cluster0.6mhjms9.mongodb.net/?appName=Cluster0');
+mongoose.connect('mongodb+srv://butt:1234@cluster0.ik5f94l.mongodb.net/?appName=Cluster0');
 
 mongoose.connection.on('error', (error) => {
     console.log('MongoDB connection failed:', error);
