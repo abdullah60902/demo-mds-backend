@@ -2,12 +2,16 @@ const express = require("express");
 const router = express.Router();
 const ConsentRecord = require("../model/ConsentRecord");
 const { verifyToken, allowRoles } = require("../middleware/auth");
+const { storage, cloudinary } = require("../utils/cloudinary");
+const multer = require("multer");
+const upload = multer({ storage });
 
 // === CREATE Consent/DoLS Record ===
 router.post(
   "/",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const {
@@ -27,6 +31,7 @@ router.post(
         authorizationEndDate,
         conditions,
         status: "Active",
+        attachments: req.files?.map((file) => file.path) || [],
       });
 
       const savedRecord = await newRecord.save();
@@ -56,9 +61,7 @@ router.get(
   }
 );
 
-// === GET — Consent Records older than 6 months (based on Authorization End Date or CreatedAt) ===
-// Logic: If authorizationEndDate exists, check if it's > 6 months ago. 
-// If not, fallback to createdAt (created > 6 months ago)
+// === GET — Consent Records older than 6 months ===
 router.get(
   "/older-than-six-months",
   verifyToken,
@@ -94,11 +97,24 @@ router.put(
   "/:id",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
+      const updateBody = { ...req.body };
+
+      // Merge old (kept) attachments with newly uploaded files
+      const keptAttachments = req.body.oldAttachments
+        ? (Array.isArray(req.body.oldAttachments) ? req.body.oldAttachments : [req.body.oldAttachments])
+        : [];
+      const newUploadedPaths = req.files?.map((file) => file.path) || [];
+      if (keptAttachments.length > 0 || newUploadedPaths.length > 0) {
+        updateBody.attachments = [...keptAttachments, ...newUploadedPaths];
+      }
+      delete updateBody.oldAttachments;
+
       const updatedRecord = await ConsentRecord.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        updateBody,
         { new: true }
       );
 

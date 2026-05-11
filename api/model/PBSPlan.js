@@ -27,6 +27,9 @@ const pbsPlanSchema = new mongoose.Schema({
     dietType: String,
     sleepRoutine: String,
 
+    // Document attachments (Cloudinary URLs)
+    attachments: [{ type: String }],
+
     archived: { type: Boolean, default: false }, // Explicit archive flag if needed
     
 }, { timestamps: true });

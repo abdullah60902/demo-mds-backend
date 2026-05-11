@@ -6,6 +6,9 @@ const consentSchema = new mongoose.Schema({
     authorizationEndDate: { type: Date },
     conditions: { type: String },
     
+    // Document attachments (Cloudinary URLs)
+    attachments: [{ type: String }],
+    
     // Additional fields if needed for future extensions (e.g. general stats)
     status: { type: String, default: 'Active', enum: ['Active', 'Archived'] },
 }, { timestamps: true });

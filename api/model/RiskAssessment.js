@@ -54,6 +54,9 @@ const riskAssessmentSchema = new mongoose.Schema({
 
     clinicalSummary: { type: String },
 
+    // Document attachments (Cloudinary URLs)
+    attachments: [{ type: String }],
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('RiskAssessment', riskAssessmentSchema);

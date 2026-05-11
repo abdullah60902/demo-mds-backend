@@ -14,6 +14,9 @@ const dailyLogSchema = new mongoose.Schema({
     // Optional additional field found in frontend
     healthQuick: { type: String },
 
+    // Document attachments (Cloudinary URLs)
+    attachments: [{ type: String }],
+
     status: { type: String, default: 'Active', enum: ['Active', 'Archived'] },
 }, { timestamps: true });
 

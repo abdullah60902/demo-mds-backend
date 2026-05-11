@@ -7,6 +7,8 @@ const handoverSchema = new mongoose.Schema({
     handingOver: { type: String },
     takingOver: { type: String },
     summaryNotes: { type: String },
+    // Document attachments (Cloudinary URLs)
+    attachments: [{ type: String }],
     status: { type: String, default: 'Active', enum: ['Active', 'Archived'] },
 }, { timestamps: true });
 

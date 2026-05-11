@@ -11,7 +11,9 @@ const goalSchema = new mongoose.Schema({
         status: String,
         changedAt: { type: Date, default: Date.now },
         changedBy: String
-    }] // Optional: track status changes over time
+    }], // Optional: track status changes over time
+    // Document attachments (Cloudinary URLs)
+    attachments: [{ type: String }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Goal', goalSchema);

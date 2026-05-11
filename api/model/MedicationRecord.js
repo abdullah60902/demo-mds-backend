@@ -19,7 +19,7 @@ const medicationRecordSchema = new mongoose.Schema({
     currentStock: { type: Number }, 
     stockUnit: { type: String },
 
-    status: { type: String, default: 'Active', enum: ['Active', 'Archived'] },
+    status: { type: String, default: 'Active', enum: ['Active', 'Archived', 'Pending', 'Completed'] },
 }, { timestamps: true });
 
 module.exports = mongoose.model('MedicationRecord', medicationRecordSchema);

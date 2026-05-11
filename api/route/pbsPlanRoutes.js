@@ -3,12 +3,16 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const PBSPlan = require("../model/PBSPlan");
 const { verifyToken, allowRoles } = require("../middleware/auth");
+const { storage, cloudinary } = require("../utils/cloudinary");
+const multer = require("multer");
+const upload = multer({ storage });
 
 // === CREATE PBS Plan ===
 router.post(
   "/",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const {
@@ -65,6 +69,7 @@ router.post(
         assistanceLevel,
         dietType,
         sleepRoutine,
+        attachments: req.files?.map((file) => file.path) || [],
       });
 
       const savedPlan = await newPlan.save();
@@ -122,6 +127,7 @@ router.put(
   "/:id",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const {
@@ -176,6 +182,15 @@ router.put(
       if (finalStep1 !== undefined) updateData.step1Response = finalStep1;
       if (finalStep2 !== undefined) updateData.step2Intervention = finalStep2;
       if (finalStep3 !== undefined) updateData.step3HighRisk = finalStep3;
+
+      // Merge old (kept) attachments with newly uploaded files
+      const keptAttachments = req.body.oldAttachments
+        ? (Array.isArray(req.body.oldAttachments) ? req.body.oldAttachments : [req.body.oldAttachments])
+        : [];
+      const newUploadedPaths = req.files?.map((file) => file.path) || [];
+      if (keptAttachments.length > 0 || newUploadedPaths.length > 0) {
+        updateData.attachments = [...keptAttachments, ...newUploadedPaths];
+      }
 
       const updatedPlan = await PBSPlan.findByIdAndUpdate(
         req.params.id,

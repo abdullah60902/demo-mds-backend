@@ -2,12 +2,16 @@ const express = require("express");
 const router = express.Router();
 const Handover = require("../model/Handover");
 const { verifyToken, allowRoles } = require("../middleware/auth");
+const { storage, cloudinary } = require("../utils/cloudinary");
+const multer = require("multer");
+const upload = multer({ storage });
 
 // === CREATE Handover Record ===
 router.post(
   "/",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const {
@@ -31,6 +35,7 @@ router.post(
         takingOver,
         summaryNotes,
         status: "Active",
+        attachments: req.files?.map((file) => file.path) || [],
       });
 
       const savedHandover = await newHandover.save();
@@ -49,7 +54,6 @@ router.get(
   allowRoles("Admin", "Staff", "Client", "Family", "External"),
   async (req, res) => {
     try {
-      // Sort by date descending, then time descending if possible, or just date
       const handovers = await Handover.find({ client: req.params.clientId }).sort({
         date: -1,
         createdAt: -1
@@ -95,11 +99,24 @@ router.put(
   "/:id",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
+      const updateBody = { ...req.body };
+
+      // Merge old (kept) attachments with newly uploaded files
+      const keptAttachments = req.body.oldAttachments
+        ? (Array.isArray(req.body.oldAttachments) ? req.body.oldAttachments : [req.body.oldAttachments])
+        : [];
+      const newUploadedPaths = req.files?.map((file) => file.path) || [];
+      if (keptAttachments.length > 0 || newUploadedPaths.length > 0) {
+        updateBody.attachments = [...keptAttachments, ...newUploadedPaths];
+      }
+      delete updateBody.oldAttachments;
+
       const updatedHandover = await Handover.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        updateBody,
         { new: true }
       );
 

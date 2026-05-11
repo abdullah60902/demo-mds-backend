@@ -2,12 +2,16 @@ const express = require("express");
 const router = express.Router();
 const RiskAssessment = require("../model/RiskAssessment");
 const { verifyToken, allowRoles } = require("../middleware/auth");
+const { storage, cloudinary } = require("../utils/cloudinary");
+const multer = require("multer");
+const upload = multer({ storage });
 
 // === CREATE Risk Assessment ===
 router.post(
   "/",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const {
@@ -24,15 +28,22 @@ router.post(
         return res.status(400).json({ error: "clientId is required" });
       }
 
+      // Parse categories if sent as JSON string (common with FormData)
+      let parsedCategories = categories;
+      if (typeof categories === 'string') {
+        try { parsedCategories = JSON.parse(categories); } catch(e) { /* keep as-is */ }
+      }
+
       const newAssessment = new RiskAssessment({
         client: clientId,
         planTitle,
         dateOfAssessment,
         assessedBy,
         overallRiskLevel,
-        categories,
+        categories: parsedCategories,
         clinicalSummary,
         status: "Active",
+        attachments: req.files?.map((file) => file.path) || [],
       });
 
       const savedAssessment = await newAssessment.save();
@@ -72,7 +83,6 @@ router.get(
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 6);
 
-      // Find documents where dateOfAssessment is older than 6 months
       const assessments = await RiskAssessment.find({
         dateOfAssessment: { $lt: cutoff },
       })
@@ -96,11 +106,30 @@ router.put(
   "/:id",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
+      const updateData = { ...req.body };
+
+      // Parse categories if sent as JSON string
+      if (typeof updateData.categories === 'string') {
+        try { updateData.categories = JSON.parse(updateData.categories); } catch(e) { /* keep as-is */ }
+      }
+
+      // Merge old (kept) attachments with newly uploaded files
+      const keptAttachments = req.body.oldAttachments
+        ? (Array.isArray(req.body.oldAttachments) ? req.body.oldAttachments : [req.body.oldAttachments])
+        : [];
+      const newUploadedPaths = req.files?.map((file) => file.path) || [];
+      if (keptAttachments.length > 0 || newUploadedPaths.length > 0) {
+        updateData.attachments = [...keptAttachments, ...newUploadedPaths];
+      }
+      // Clean up helper field
+      delete updateData.oldAttachments;
+
       const updatedAssessment = await RiskAssessment.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        updateData,
         { new: true }
       );
 

@@ -408,8 +408,15 @@ router.put(
 
 
       // Build update payload, preserving existing values where needed
+      // Merge old (kept) attachments sent from frontend with newly uploaded files
+      const keptAttachments = req.body.oldAttachments
+        ? (Array.isArray(req.body.oldAttachments) ? req.body.oldAttachments : [req.body.oldAttachments])
+        : [];
+      const newUploadedPaths = req.files?.map((file) => file.path) || [];
       const updatedFields = {
-        attachments: req.files?.map((file) => file.path) || existingPlan.attachments,
+        attachments: [...keptAttachments, ...newUploadedPaths].length > 0
+          ? [...keptAttachments, ...newUploadedPaths]
+          : existingPlan.attachments,
       };
 
       // Copy allowed top-level updatable fields if provided

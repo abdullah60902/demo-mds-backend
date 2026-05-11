@@ -2,12 +2,16 @@ const express = require("express");
 const router = express.Router();
 const Goal = require("../model/Goal");
 const { verifyToken, allowRoles } = require("../middleware/auth");
+const { storage, cloudinary } = require("../utils/cloudinary");
+const multer = require("multer");
+const upload = multer({ storage });
 
 // === CREATE Goal ===
 router.post(
   "/",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const {
@@ -30,7 +34,8 @@ router.post(
         targetDate,
         metric,
         status: status || "Not Started",
-        statusHistory: [{ status: status || "Not Started", changedBy: req.user.email }]
+        statusHistory: [{ status: status || "Not Started", changedBy: req.user.email }],
+        attachments: req.files?.map((file) => file.path) || [],
       });
 
       const savedGoal = await newGoal.save();
@@ -70,7 +75,6 @@ router.get(
       const cutoff = new Date();
       cutoff.setMonth(cutoff.getMonth() - 6);
 
-      // We look for goals where startDate is before the cutoff
       const goals = await Goal.find({
         startDate: { $lt: cutoff },
       })
@@ -94,6 +98,7 @@ router.put(
   "/:id",
   verifyToken,
   allowRoles("Admin", "Staff"),
+  upload.array("attachments"),
   async (req, res) => {
     try {
       const { status } = req.body;
@@ -112,9 +117,20 @@ router.put(
           });
       }
 
+      // Merge old (kept) attachments with newly uploaded files
+      const keptAttachments = req.body.oldAttachments
+        ? (Array.isArray(req.body.oldAttachments) ? req.body.oldAttachments : [req.body.oldAttachments])
+        : [];
+      const newUploadedPaths = req.files?.map((file) => file.path) || [];
+      const updateBody = { ...req.body };
+      if (keptAttachments.length > 0 || newUploadedPaths.length > 0) {
+        updateBody.attachments = [...keptAttachments, ...newUploadedPaths];
+      }
+      delete updateBody.oldAttachments;
+
       const updatedGoal = await Goal.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        updateBody,
         { new: true }
       );
 
